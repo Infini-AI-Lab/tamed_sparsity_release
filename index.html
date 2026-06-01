@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Taming Sparse Rollout</title>
+  <meta name="description" content="Project page for Taming Sparse Rollout: Understanding Stability in RL for Large Language Models with Sparse Attention.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <nav class="topbar" aria-label="Page navigation">
+      <a class="brand" href="#top" aria-label="Taming Sparse Rollout home">
+        <img src="assets/figures/fig-000.png" alt="" aria-hidden="true">
+        <span>Tamed Sparsity</span>
+      </a>
+      <div class="navlinks">
+        <a href="#overview">Overview</a>
+        <a href="#method">Method</a>
+        <a href="#results">Results</a>
+        <a href="#citation">Citation</a>
+      </div>
+    </nav>
+
+    <section id="top" class="hero-inner">
+      <p class="eyebrow">Sparse rollout for RLVR</p>
+      <h1>Taming Sparse Rollout: Understanding Stability in RL for Large Language Models with Sparse Attention</h1>
+      <p class="authors">Zhuoming Chen*, Hongyi Liu*, Yang Zhou*, Haizhong Zheng, Beidi Chen</p>
+      <p class="affiliation">Carnegie Mellon University</p>
+
+      <div class="button-row" aria-label="Project links">
+        <a class="pill" href="#" aria-label="Placeholder arXiv link">
+          <span class="icon">P</span>
+          arXiv
+        </a>
+        <a class="pill" href="#" aria-label="Placeholder GitHub link">
+          <span class="icon">G</span>
+          GitHub
+        </a>
+        <a class="pill" href="#citation">
+          <span class="icon">{ }</span>
+          Citation
+        </a>
+        <a class="pill" href="#pdf-preview">
+          <span class="icon">PDF</span>
+          Screenshots
+        </a>
+      </div>
+
+      <div class="hero-figure">
+        <div class="figure-card large">
+          <img src="assets/figures/fig-005.png" alt="Speedup to dense rollout RL training and rollout speedup by model size.">
+        </div>
+        <div class="hero-stats" aria-label="Paper highlights">
+          <div>
+            <strong>0.86</strong>
+            <span>5-percentile acceptance threshold for stable sparse rollout</span>
+          </div>
+          <div>
+            <strong>2.4x</strong>
+            <span>rollout speedup reported on Qwen3-4B</span>
+          </div>
+          <div>
+            <strong>14B</strong>
+            <span>generalization validated with stable on-par training</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <main>
+    <section id="overview" class="section">
+      <div class="section-heading">
+        <span class="section-icon">i</span>
+        <h2>TL;DR</h2>
+      </div>
+      <p class="lead">
+        Sparse attention can make long-context RL rollouts much cheaper, but arbitrary sparsity creates actor-policy
+        distribution mismatch and can collapse dense-policy training. This work shows that the tail of the sparse-dense
+        token distribution is the right stability signal, then uses dynamic sparsity scheduling to keep that tail mismatch
+        controlled through generation.
+      </p>
+      <div class="insight-grid">
+        <article>
+          <h3>Problem</h3>
+          <p>Aggressive sparse rollout is fast but can shorten responses during training and destabilize RL.</p>
+        </article>
+        <article>
+          <h3>Key Signal</h3>
+          <p>Most tokens remain nearly dense-aligned, so average acceptance hides the harmful tail behavior.</p>
+        </article>
+        <article>
+          <h3>Result</h3>
+          <p>A tail acceptance threshold around 0.86 works across model sizes and unlocks strong rollout speedups.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section visual-band">
+      <div class="section-heading">
+        <span class="section-icon">1</span>
+        <h2>The Stability-Efficiency Tradeoff</h2>
+      </div>
+      <p>
+        The paper studies the lowest sparse-rollout cost that still preserves stable dense-policy RL. Instead of relying
+        on average distribution mismatch, it measures lower-tail per-token acceptance against dense attention.
+      </p>
+      <div class="three-panel">
+        <figure class="figure-card">
+          <img src="assets/figures/fig-002.png" alt="Sparse rollout reward collapse under low KV budget.">
+          <figcaption>Arbitrary sparse rollout can miss the stable low-cost region.</figcaption>
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-003.png" alt="Per-token acceptance distribution is highly skewed toward one.">
+          <figcaption>Per-token acceptance is long-tailed and heavily skewed toward dense agreement.</figcaption>
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-004.png" alt="Model-size threshold prediction and confirmation.">
+          <figcaption>The threshold study asks how much mismatch different model sizes can tolerate.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="method" class="section split">
+      <div>
+        <div class="section-heading">
+          <span class="section-icon">2</span>
+          <h2>Method</h2>
+        </div>
+        <p>
+          Dynamic sparsity scheduling increases the KV budget as generation proceeds, keeping sparse-dense distribution
+          mismatch approximately constant across long rollouts. The target is selected with the 5-percentile acceptance
+          statistic, which focuses on the unstable tail instead of the easy tokens that already match dense attention.
+        </p>
+        <div class="formula">
+          <span>Acceptance Rate</span>
+          <strong>alpha = E[min(p(x), q(x))]</strong>
+        </div>
+        <p>
+          After fixing a stability target, the paper uses a rollout cost model to choose the cheapest sparse attention
+          schedule that satisfies the threshold.
+        </p>
+      </div>
+      <figure class="figure-card">
+        <img src="assets/figures/fig-015.png" alt="KV budget scheduling across context lengths for Qwen3 models.">
+        <figcaption>KV budget schedules become more lenient as context grows.</figcaption>
+      </figure>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <span class="section-icon">3</span>
+        <h2>Control Study Across Model Sizes</h2>
+      </div>
+      <p>
+        The control study estimates schedules for Qwen3-1.7B, 4B, and 8B at several mismatch targets, then trains under
+        each target to identify which settings remain stable and match dense rollout performance.
+      </p>
+      <div class="wide-grid">
+        <figure class="figure-card">
+          <img src="assets/figures/fig-008.png" alt="Qwen3-1.7B acceptance rate versus sequence length.">
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-009.png" alt="Qwen3-4B acceptance rate versus sequence length.">
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-010.png" alt="Qwen3-8B acceptance rate versus sequence length.">
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-011.png" alt="Qwen3-1.7B AIME2026 training curves.">
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-012.png" alt="Qwen3-4B AIME2026 training curves.">
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-013.png" alt="Qwen3-8B AIME2025 training curves.">
+        </figure>
+      </div>
+    </section>
+
+    <section id="results" class="section visual-band">
+      <div class="section-heading">
+        <span class="section-icon">4</span>
+        <h2>Results</h2>
+      </div>
+      <div class="results-layout">
+        <figure class="figure-card">
+          <img src="assets/figures/fig-018.png" alt="Qwen3-14B sparse rollout and dense rollout AIME2026 results.">
+          <figcaption>Qwen3-14B validates stable on-par performance with sparse rollout at the tail threshold.</figcaption>
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-019.png" alt="DistillSparse training improves AIME2025 accuracy.">
+          <figcaption>LoRA distillation can improve alignment and push beyond the plain sparse threshold.</figcaption>
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-020.png" alt="Math threshold generalizes to coding.">
+          <figcaption>The mismatch threshold found on math generalizes to coding evaluation.</figcaption>
+        </figure>
+      </div>
+      <div class="metric-strip">
+        <div><b>2.2x</b><span>Qwen3-1.7B rollout speedup</span></div>
+        <div><b>2.4x</b><span>Qwen3-4B rollout speedup</span></div>
+        <div><b>2.0x</b><span>Qwen3-8B rollout speedup</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <span class="section-icon">$</span>
+        <h2>Cost-Aware Scheduling</h2>
+      </div>
+      <p>
+        The rollout cost model separates dense and sparse decoding into computation and KV-cache memory traffic. Sparse
+        attention replaces quadratic rollout memory growth with budgeted O(KLout) growth, so the advantage becomes
+        larger in long-context reasoning regimes.
+      </p>
+      <div class="two-panel">
+        <figure class="figure-card">
+          <img src="assets/figures/fig-016.png" alt="Distribution mismatch versus cost across page sizes.">
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/fig-017.png" alt="Sparse distillation improves distribution alignment.">
+        </figure>
+      </div>
+    </section>
+
+    <section id="pdf-preview" class="section">
+      <div class="section-heading">
+        <span class="section-icon">PDF</span>
+        <h2>Paper Screenshots</h2>
+      </div>
+      <p>
+        The site uses the PDF figures above and keeps selected page screenshots below for visual reference.
+      </p>
+      <div class="page-preview">
+        <figure>
+          <img src="assets/pdf-pages/page-01.png" alt="Screenshot of paper page 1.">
+          <figcaption>Page 1</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/pdf-pages/page-02.png" alt="Screenshot of paper page 2.">
+          <figcaption>Page 2</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/pdf-pages/page-03.png" alt="Screenshot of paper page 3.">
+          <figcaption>Page 3</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="citation" class="section citation-section">
+      <div class="section-heading">
+        <span class="section-icon">{ }</span>
+        <h2>Citation</h2>
+      </div>
+      <p>Placeholder citation. Replace this with the final LaTeX/BibTeX entry when the paper metadata is finalized.</p>
+      <div class="codebox">
+        <button class="copy-button" type="button" data-copy-target="bibtex">Copy</button>
+        <pre id="bibtex"><code>@misc{chen2026tamingsparserollout,
+  title  = {Taming Sparse Rollout: Understanding Stability in RL for Large Language Models with Sparse Attention},
+  author = {Chen, Zhuoming and Liu, Hongyi and Zhou, Yang and Zheng, Haizhong and Chen, Beidi},
+  year   = {2026},
+  note   = {arXiv placeholder}
+}</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Website template inspired by the Infini AI Lab project-page style. Links are placeholders until release.</p>
+  </footer>
+</body>
+</html>
