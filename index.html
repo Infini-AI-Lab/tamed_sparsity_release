@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Taming Sparse Rollout</title>
   <meta name="description" content="Project page for Taming Sparse Rollout: Understanding Stability in RL for Large Language Models with Sparse Attention.">
+  <link rel="icon" type="image/png" href="radom/headpic.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -17,7 +18,7 @@
   <header class="hero">
     <nav class="topbar" aria-label="Page navigation">
       <a class="brand" href="#top" aria-label="Taming Sparse Rollout home">
-        <img src="assets/figures/fig-000.png" alt="" aria-hidden="true">
+        <img src="radom/headpic.png" alt="" aria-hidden="true">
         <span>Tamed Sparsity</span>
       </a>
       <div class="navlinks">
@@ -32,7 +33,9 @@
 
     <section id="top" class="hero-inner">
       <p class="eyebrow">Sparse rollout with Optimal Stability Efficiency Tradeoff for RLVR</p>
-      <h2>Taming Sparse Rollout: Understanding Stability in RL for Large Language Models with Sparse Attention</h2>
+      <h2 class="hero-title">
+        <span>Taming Sparse Rollout: Understanding Stability in RL for Large Language Models with Sparse Attention</span>
+      </h2>
       <p class="authors">Yang Zhou, Ranajoy Sadhukhan, Zhaofeng Sun, Zhuoming Chen, Souvik Kundu, Saket Dingliwal, Sai Muralidhar Jayanthi, Aram Galstyan, Haizhong Zheng, Beidi Chen</p>
       <p class="affiliation">Carnegie Mellon University, Independent Researcher, Intel, Amazon</p>
 
@@ -111,7 +114,9 @@
   <main>
     <section id="desiderata" class="section visual-band">
       <div class="section-heading">
-        <span class="section-icon">1</span>
+        <span class="section-icon section-icon-image">
+          <img src="radom/Telescope.png" alt="" aria-hidden="true">
+        </span>
         <h2>Previous Works Limitation and Desirata</h2>
       </div>
       <div class="desiderata-layout">
@@ -163,7 +168,9 @@
     <section id="insights" class="section split full-width-section">
       <div>
         <div class="section-heading">
-          <span class="section-icon">2</span>
+          <span class="section-icon section-icon-image">
+            <img src="radom/Idea.png" alt="" aria-hidden="true">
+          </span>
           <h2>Insights to Sparse to Dense Actor-Policy Mismatch</h2>
         </div>
         <div class="wide-grid single-figure">
@@ -203,7 +210,9 @@
 
     <section id="control-study-1" class="section visual-band">
       <div class="section-heading">
-        <span class="section-icon">3</span>
+        <span class="section-icon section-icon-image">
+          <img src="radom/Observation.png" alt="" aria-hidden="true">
+        </span>
         <h2>Control Study 1: How Mismatch Threshold Varies to Increasing Model Sizes</h2>
       </div>
       <div class="wide-grid">
@@ -237,7 +246,7 @@
         Surprisingly, we make the following finding. 
       </p> 
       <p class="hypothesis-box">
-        <strong>Takeaway 1</strong>: across a range of model sizes in Qwen3 thinking family, we find that keeping
+        <strong>Takeaway</strong>: across a range of model sizes in Qwen3 thinking family, we find that keeping
         5-percentile mismatch threshold above 0.86 generally leads to stable RL training, supporting our hypothesis.
       </p>
       <p>
@@ -247,29 +256,70 @@
 
     <section id="control-study-2" class="section">
       <div class="section-heading">
-        <span class="section-icon">4</span>
+        <span class="section-icon section-icon-image">
+          <img src="radom/GPU.png" alt="" aria-hidden="true">
+        </span>
         <h2>Control Study 2: Finding the Lowest Cost given the Mismatch Threshold</h2>
       </div>
       <div class="results-layout paired-figures">
         <figure class="figure-card">
           <img src="assets/figures/figure106.png" alt="Qwen3-14B sparse rollout and dense rollout AIME2026 results.">
-          <figcaption>Qwen3-14B validates stable on-par performance with sparse rollout at the tail threshold.</figcaption>
+          <figcaption>From our cost model study, we identified that for block-sparse attention (block-size 16 and above), smaller page size consistently ahead of the tradeoff of distribution alignment to dense and cost.</figcaption>
         </figure>
         <figure class="figure-card">
           <img src="assets/figures/figure103.png" alt="DistillSparse training improves AIME2025 accuracy.">
-          <figcaption>LoRA distillation can improve alignment and push beyond the plain sparse threshold.</figcaption>
-        </figure>
+          <figcaption>Empirically, we achieve speedup for all different sized models.</figcaption>
+        </figure> 
+        <p class="full-width-text">
+            With the mismatch threshold identified, we then look for the lowest cost achievable while meeting the mismatch threshold.
+            To make sure our analysis is general and can transfer to different hardware, we use a cost model for our analysis. 
+        </p>
+        <details class="formula cost-model full-width-text">
+          <summary>Full explanation of the cost model</summary>
+          <p>
+            We follow Sadhukhan et al. (2025)
+            and model rollout cost from model size and hardware memory bandwidth. For repeated sampling <code>N</code> times,
+            let <code>P</code> be the number of model parameters, <code>L<sub>in</sub></code> the input prompt length,
+            <code>L<sub>out</sub></code> the output length, <code>D</code> the Key/Value dimension, <code>r</code> the GQA ratio,
+            and <code>I</code> one over the GPU SRAM memory bandwidth.
+          </p>
+          <div class="cost-equation">
+            <p class="formula-label">Dense attention</p>
+            <pre><code>C<sub>comp</sub> = 2 * P * N * L<sub>out</sub> + r * (2 * L<sub>in</sub> + L<sub>out</sub>) * L<sub>out</sub> * N * D
+C<sub>mem</sub>  = 2 * L<sub>in</sub> * L<sub>out</sub> * D + N * L<sub>out</sub><sup>2</sup> * D
+C<sub>dense</sub> = C<sub>comp</sub> + I * C<sub>mem</sub></code></pre>
+          </div>
+          <p>
+            For block-sparse attention, we assume Top-k kernels incur only minimal overhead for page size
+            <code>&ge; 16</code>. With KV budget <code>B</code> and page size <code>pagesize</code>, the sparse cost is:
+          </p>
+          <div class="cost-equation">
+            <p class="formula-label">Block-sparse attention</p>
+            <pre><code>C<sub>sparse,no scoring</sub> = 2 * N * P * L<sub>out</sub> + 2 * r * N * D * B * L<sub>out</sub> + 2 * I * N * D * B * L<sub>out</sub>
+C<sub>scoring</sub> = 2 * N * L<sub>in</sub> * D * L<sub>out</sub> + (r * N * D * L<sub>out</sub><sup>2</sup>) / (2 * pagesize)
+            + 2 * I * L<sub>in</sub> * D * L<sub>out</sub> + (I * N * D * L<sub>out</sub><sup>2</sup>) / (2 * pagesize)
+C<sub>sparse</sub> = C<sub>sparse,no scoring</sub> + C<sub>scoring</sub></code></pre>
+          </div>
+        </details> 
+        <p class="full-width-text">
+          Using this cost model, we find that for <span class="text-highlight">block-sparse attention with page size 16 and above</span>,
+          smaller page sizes consistently dominate larger page sizes in the tradeoff between
+          <span class="text-highlight">dense-policy distribution alignment</span> and cost. In the paper, we provide full details
+          for other generation-length regimes, and the same conclusion holds across them. Although the cost model does
+          not explicitly account for <span class="text-highlight">Top-k kernel overhead</span>, our page-size measurements show that when
+          the Top-k kernels are well implemented, as in Vortex, sparse decoding cost is not highly sensitive to page size.
+          We therefore use <span class="text-highlight">page size 16</span> for sparsity scheduling, since it gives the strongest
+          cost-alignment tradeoff while remaining practical for efficient sparse rollout.
+        </p> 
       </div>
-      <div class="metric-strip">
-        <div><b>2.2x</b><span>Qwen3-1.7B rollout speedup</span></div>
-        <div><b>2.4x</b><span>Qwen3-4B rollout speedup</span></div>
-        <div><b>2.0x</b><span>Qwen3-8B rollout speedup</span></div>
-      </div>
+      
     </section>
 
     <section id="empirical-generalization" class="section visual-band">
       <div class="section-heading">
-        <span class="section-icon">$</span>
+        <span class="section-icon section-icon-image">
+          <img src="radom/iss.webp" alt="" aria-hidden="true">
+        </span>
         <h2>Generalization to Larger Model and Other RL domains (Coding RL)</h2>
       </div>
       <div class="wide-grid single-figure">
@@ -295,7 +345,9 @@
 
     <section id="distillsparse" class="section">
       <div class="section-heading">
-        <span class="section-icon">PDF</span>
+        <span class="section-icon section-icon-image">
+          <img src="radom/cosmonautllama.png" alt="" aria-hidden="true">
+        </span>
         <h2>DistillSparse: A Technique Pushes for More Aggressive Sparsity and Higher Speedup</h2>
       </div>
       <div class="results-layout paired-figures balanced-figures">

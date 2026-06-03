@@ -136,6 +136,24 @@ h1 {
   letter-spacing: 0;
 }
 
+.hero-title {
+  max-width: 980px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.hero-title img {
+  flex: 0 0 auto;
+  width: clamp(54px, 7vw, 86px);
+  height: clamp(54px, 7vw, 86px);
+  object-fit: contain;
+  border-radius: 8px;
+}
+
 .authors {
   margin-bottom: 2px;
   color: var(--accent-2);
@@ -347,6 +365,19 @@ h1 {
   font-weight: 800;
 }
 
+.section-icon-image {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.section-icon-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 h2 {
   margin: 0;
   font-size: clamp(25px, 3vw, 36px);
@@ -381,6 +412,14 @@ h3 {
 }
 
 .section > .full-width-text {
+  width: 100%;
+  max-width: none;
+}
+
+.results-layout > .full-width-text,
+.wide-grid > .full-width-text,
+.two-panel > .full-width-text {
+  grid-column: 1 / -1;
   width: 100%;
   max-width: none;
 }
@@ -593,6 +632,83 @@ figcaption {
   line-height: 1.35;
 }
 
+.cost-model {
+  grid-column: 1 / -1;
+}
+
+.cost-model summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(8, 145, 178, 0.35);
+  border-radius: 8px;
+  color: var(--accent-2);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+
+.cost-model summary::-webkit-details-marker {
+  display: none;
+}
+
+.cost-model summary::after {
+  content: "+";
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 800;
+}
+
+.cost-model[open] summary {
+  margin-bottom: 16px;
+}
+
+.cost-model[open] summary::after {
+  content: "-";
+}
+
+.cost-model p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.cost-model p + .cost-equation,
+.cost-equation + p {
+  margin-top: 16px;
+}
+
+.cost-equation {
+  padding: 14px 16px;
+  border: 1px solid rgba(8, 145, 178, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  overflow-x: auto;
+}
+
+.cost-model .formula-label {
+  margin-bottom: 8px;
+  color: var(--accent-2);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.cost-equation pre {
+  margin: 0;
+  color: var(--ink);
+  font-family: "JetBrains Mono", monospace;
+  font-size: clamp(12px, 1.35vw, 15px);
+  line-height: 1.65;
+  white-space: pre;
+}
+
 .metric-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -719,6 +835,12 @@ pre {
 
   .hero-inner {
     padding-top: 42px;
+  }
+
+  .hero-title {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 
   .hero-figure {
