@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.9.4/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
   <script defer src="script.js"></script>
 </head>
@@ -19,148 +21,191 @@
         <span>Tamed Sparsity</span>
       </a>
       <div class="navlinks">
-        <a href="#overview">Overview</a>
-        <a href="#method">Method</a>
-        <a href="#results">Results</a>
-        <a href="#citation">Citation</a>
+        <a href="#desiderata">Desiderata</a>
+        <a href="#insights">Insights</a>
+        <a href="#control-study-1">Control Study 1</a>
+        <a href="#control-study-2">Control Study 2</a>
+        <a href="#empirical-generalization">Empirical Generalization</a>
+        <a href="#distillsparse">DistillSparse</a>
       </div>
     </nav>
 
     <section id="top" class="hero-inner">
-      <p class="eyebrow">Sparse rollout for RLVR</p>
-      <h1>Taming Sparse Rollout: Understanding Stability in RL for Large Language Models with Sparse Attention</h1>
-      <p class="authors">Zhuoming Chen*, Hongyi Liu*, Yang Zhou*, Haizhong Zheng, Beidi Chen</p>
-      <p class="affiliation">Carnegie Mellon University</p>
+      <p class="eyebrow">Sparse rollout with Optimal Stability Efficiency Tradeoff for RLVR</p>
+      <h2>Taming Sparse Rollout: Understanding Stability in RL for Large Language Models with Sparse Attention</h2>
+      <p class="authors">Yang Zhou, Ranajoy Sadhukhan, Zhaofeng Sun, Zhuoming Chen, Souvik Kundu, Saket Dingliwal, Sai Muralidhar Jayanthi, Aram Galstyan, Haizhong Zheng, Beidi Chen</p>
+      <p class="affiliation">Carnegie Mellon University, Independent Researcher, Intel, Amazon</p>
 
       <div class="button-row" aria-label="Project links">
         <a class="pill" href="#" aria-label="Placeholder arXiv link">
-          <span class="icon">P</span>
+          <span class="icon arxiv-icon">
+            <i class="ai ai-arxiv"></i>
+          </span>
           arXiv
         </a>
         <a class="pill" href="#" aria-label="Placeholder GitHub link">
-          <span class="icon">G</span>
+          <span class="icon">
+            <i class="fab fa-github"></i>
+          </span>
           GitHub
         </a>
         <a class="pill" href="#citation">
           <span class="icon">{ }</span>
           Citation
         </a>
-        <a class="pill" href="#pdf-preview">
-          <span class="icon">PDF</span>
-          Screenshots
-        </a>
       </div>
 
       <div class="hero-figure">
-        <div class="figure-card large">
-          <img src="assets/figures/fig-005.png" alt="Speedup to dense rollout RL training and rollout speedup by model size.">
+        <div class="figure-card large hero-image-card hero-image-card-small">
+          <img src="assets/figures/fig-002.png" alt="Speedup to dense rollout RL training and rollout speedup by model size.">
+        </div>
+        <div class="figure-card large hero-image-card hero-image-card-wide">
+          <img src="assets/figures/figure100.png" alt="Distribution mismatch across sequence length for dense rollout and sparse rollout.">
         </div>
         <div class="hero-stats" aria-label="Paper highlights">
           <div>
-            <strong>0.86</strong>
-            <span>5-percentile acceptance threshold for stable sparse rollout</span>
+            <strong>0.86 &ge; &tau;</strong>
+            <span>Tail Per-token Mismatch Threshold &tau; Identified for Qwen3 Family thinking models</span>
           </div>
           <div>
-            <strong>2.4x</strong>
-            <span>rollout speedup reported on Qwen3-4B</span>
+            <strong>2.2x, 2.4x, 2.0x</strong>
+            <span>Speedup Achieved using Sparsity Scheduling Qwen3 1.7B, 4B, 8B thinking models' Stable RL rollout</span>
           </div>
           <div>
             <strong>14B</strong>
-            <span>generalization validated with stable on-par training</span>
+            <span>threshold generalization validated to significantly larger model size</span>
           </div>
         </div>
+      </div>
+
+      <div id="overview" class="hero-overview">
+        <p class="lead">
+          Despite being <span class="text-highlight">powerful</span>, reinforcement learning with verifiable rewards (RLVR) triggers <span class="text-highlight">extremely long
+          COT</span>, thus highly computationally expensive. RLVR per-step training cost is dominated by
+          <span class="text-highlight">long-context generation in rollout</span>, making sparse attention a promising technique to accelerate vanilla dense rollout
+          generation. However, in practice, mastering the <span class="text-highlight">tradeoff</span> between sparse rollout RL stability and efficiency
+          is difficult - either sparsity too aggressive and training collapse or too lenient and insufficient speedup.
+        </p>
+        <p class="lead">
+          To study the optimal tradeoff, we first observe that most tokens generated by sparse rollout are perfectly
+          aligned with dense policy even under high sparsity. We then hypothesize that once we constrain the
+          <span class="text-highlight">tail distribution</span> of the sparse to dense actor-policy mismatch by a threshold, we are able to train with sparse
+          rollout stably. We validate that our hypothesis holds by introducing a <span class="text-highlight">dynamic sparsity scheduling</span>
+          method for keeping the tail distribution constant through generation and study how the threshold scales
+          with model size.
+        </p>
+        <p class="lead">
+          Surprisingly, across a range of model sizes in Qwen3 thinking family, we find that keeping
+          <span class="text-highlight">5-percentile mismatch threshold</span> above 0.86 generally works and use a cost-model analysis to
+          find the a sparsity scheduling for maximum speedup under mismatch threshold, thus achieving
+          <span class="text-highlight">2.2x, 2.4x, and 2.0x</span> in rollout when training Qwen3-1.7B, Qwen3-4B, Qwen3-8B. Empirically, we show the
+          identified threshold generalizes to <span class="text-highlight">much larger model size</span> (Qwen3-14B) and other RL domain (Coding)
+          and enables stable training. Additionally, we propose and show that <span class="text-highlight">DistillSparse</span>, a lightweight
+          LoRA-based distillation method that further actively aligns sparse rollouts with the dense policy and
+          enables higher speedup with more aggressive sparsity.
+        </p>
       </div>
     </section>
   </header>
 
   <main>
-    <section id="overview" class="section">
-      <div class="section-heading">
-        <span class="section-icon">i</span>
-        <h2>TL;DR</h2>
-      </div>
-      <p class="lead">
-        Sparse attention can make long-context RL rollouts much cheaper, but arbitrary sparsity creates actor-policy
-        distribution mismatch and can collapse dense-policy training. This work shows that the tail of the sparse-dense
-        token distribution is the right stability signal, then uses dynamic sparsity scheduling to keep that tail mismatch
-        controlled through generation.
-      </p>
-      <div class="insight-grid">
-        <article>
-          <h3>Problem</h3>
-          <p>Aggressive sparse rollout is fast but can shorten responses during training and destabilize RL.</p>
-        </article>
-        <article>
-          <h3>Key Signal</h3>
-          <p>Most tokens remain nearly dense-aligned, so average acceptance hides the harmful tail behavior.</p>
-        </article>
-        <article>
-          <h3>Result</h3>
-          <p>A tail acceptance threshold around 0.86 works across model sizes and unlocks strong rollout speedups.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section visual-band">
+    <section id="desiderata" class="section visual-band">
       <div class="section-heading">
         <span class="section-icon">1</span>
-        <h2>The Stability-Efficiency Tradeoff</h2>
+        <h2>Previous Works Limitation and Desirata</h2>
       </div>
-      <p>
-        The paper studies the lowest sparse-rollout cost that still preserves stable dense-policy RL. Instead of relying
-        on average distribution mismatch, it measures lower-tail per-token acceptance against dense attention.
-      </p>
-      <div class="three-panel">
-        <figure class="figure-card">
-          <img src="assets/figures/fig-002.png" alt="Sparse rollout reward collapse under low KV budget.">
-          <figcaption>Arbitrary sparse rollout can miss the stable low-cost region.</figcaption>
-        </figure>
-        <figure class="figure-card">
-          <img src="assets/figures/fig-003.png" alt="Per-token acceptance distribution is highly skewed toward one.">
-          <figcaption>Per-token acceptance is long-tailed and heavily skewed toward dense agreement.</figcaption>
-        </figure>
-        <figure class="figure-card">
-          <img src="assets/figures/fig-004.png" alt="Model-size threshold prediction and confirmation.">
-          <figcaption>The threshold study asks how much mismatch different model sizes can tolerate.</figcaption>
+      <div class="desiderata-layout">
+        <div class="section-copy">
+          <p>
+            Sparse attention (especially dynamic token selection) has been widely studied. However, prior work falls short of building a concrete understanding of the optimal tradeoff between stability and efficiency in the RL setting.
+          </p>
+          <ul class="lead">
+            <li>
+              <span class="text-highlight">Sparse attention inference accuracy &uparrow; &NotEqual; RL stability &uparrow;.</span>
+              For downstream-task inference, sparse rollout RL instability is mainly due to per-token distribution mismatch
+              between the sparse actor and dense policy rather than insufficient rollout rewards.
+            </li>
+            <li>
+              <span class="text-highlight">Suboptimal convergence under severe actor-policy mismatch.</span>
+              Prior work (TIS, Jackpot) addresses actor-policy distribution mismatch, but often studies milder scenarios,
+              such as staleness, where actor-policy KL divergence is one order of magnitude smaller than in sparse rollout.
+              When directly applied, these techniques require clipping or masking significant training signals to maintain
+              stability, leading to poor training convergence.
+            </li>
+            <li>
+              <span class="text-highlight">Poor efficiency.</span>
+              Sparse rollout can be trivially recovered to achieve stable training by applying elementwise Top-k or using a
+              huge KV budget, but these approaches do not achieve large efficiency gains.
+            </li>
+          </ul>
+          <p>
+            Ideally, we desire RL with sparse rollout to:
+          </p>
+          <ul class="lead">
+            <li>
+              Enable <span class="text-highlight">stable</span> dense-policy training.
+            </li>
+            <li>
+              <span class="text-highlight">Match dense performance</span> regardless of model size and generation length.
+            </li>
+            <li>
+              Achieve strong <span class="text-highlight">efficiency</span> benefits over dense rollout.
+            </li>
+          </ul>
+        </div>
+        <figure class="figure-card side-figure">
+          <img src="assets/figures/figure102.png" alt="Sparse rollout stability and efficiency desiderata.">
+          <figcaption>Inference Accuracy using sparse attention (lower average reward than dense rollout) isn't the main problem to sparse rollout collapse. Here on top of an aggressive sparsity which triggers collapse, we sample 2N times and select the top-N rewards during sparse rollout, achieving higher average reward than dense (lower), and the training still crashes (higher).</figcaption>
         </figure>
       </div>
     </section>
 
-    <section id="method" class="section split">
+    <section id="insights" class="section split full-width-section">
       <div>
         <div class="section-heading">
           <span class="section-icon">2</span>
-          <h2>Method</h2>
+          <h2>Insights to Sparse to Dense Actor-Policy Mismatch</h2>
+        </div>
+        <div class="wide-grid single-figure">
+          <figure class="figure-card">
+            <img src="assets/figures/figure101.png" alt="Sparse rollout reward collapse under low KV budget.">
+            <figcaption>Arbitrary sparse rollout can miss the stable low-cost region.</figcaption>
+          </figure>
         </div>
         <p>
-          Dynamic sparsity scheduling increases the KV budget as generation proceeds, keeping sparse-dense distribution
-          mismatch approximately constant across long rollouts. The target is selected with the 5-percentile acceptance
-          statistic, which focuses on the unstable tail instead of the easy tokens that already match dense attention.
+          The key observation is that <span class="text-highlight">sparse rollout collapse is not driven by a uniform degradation across all tokens.</span>
+          Even under aggressive sparsity, most generated tokens remain nearly distribution-aligned with the dense policy.
+          The unstable signal instead appears in the small fraction of tokens where sparse and dense behavior diverge.
         </p>
-        <div class="formula">
-          <span>Acceptance Rate</span>
-          <strong>alpha = E[min(p(x), q(x))]</strong>
-        </div>
         <p>
-          After fixing a stability target, the paper uses a rollout cost model to choose the cheapest sparse attention
-          schedule that satisfies the threshold.
+          To see this, we collect tokens from sparse-attention generations with 20K prompt length and 2K generation length,
+          then measure each token's distribution mismatch against the dense model. The resulting distribution is highly
+          skewed: most tokens are close to perfectly aligned, even when the sparsity budget is aggressive enough to cause
+          RL collapse. (In fact, in the paper we show that the tail distribution can be well-modeled by a Beta Distribution) 
+          <span class="text-highlight">The high skewness makes average mismatch a weak stability indicator.</span> For example, when training Qwen3-1.7B
+          with a 37K generation budget, a KV budget of 4096 remains stable while 2560 collapses, but their average
+          per-token sparse-dense L1 distances are still very close and very sensitive to measurement precision: 0.977 and 0.968.
+        </p>
+        <p>
+          We therefore evaluate sparse-dense mismatch with <span class="text-highlight">lower-tail statistics rather than the average</span>. In particular,
+          we use the lower 5-percentile to measure the worst-aligned tokens while ignoring the many "perfect" tokens that
+          are unlikely to cause RL training collapse. This leads to the following hypothesis.
+        </p>
+        <p class="hypothesis-box">
+          <strong>Hypothesis:</strong> if the tail distribution mismatch between the sparse actor and dense policy stays above a threshold
+          throughout rollout, sparse rollout for dense policy RL will be stable.
+        </p>
+        <p>
+          For our study, we focus on block-sparse attention as a study, but we believe that the principles discovered should be applicable to other types of context compression methods.
         </p>
       </div>
-      <figure class="figure-card">
-        <img src="assets/figures/fig-015.png" alt="KV budget scheduling across context lengths for Qwen3 models.">
-        <figcaption>KV budget schedules become more lenient as context grows.</figcaption>
-      </figure>
     </section>
 
-    <section class="section">
+    <section id="control-study-1" class="section visual-band">
       <div class="section-heading">
         <span class="section-icon">3</span>
-        <h2>Control Study Across Model Sizes</h2>
+        <h2>Control Study 1: How Mismatch Threshold Varies to Increasing Model Sizes</h2>
       </div>
-      <p>
-        The control study estimates schedules for Qwen3-1.7B, 4B, and 8B at several mismatch targets, then trains under
-        each target to identify which settings remain stable and match dense rollout performance.
-      </p>
       <div class="wide-grid">
         <figure class="figure-card">
           <img src="assets/figures/fig-008.png" alt="Qwen3-1.7B acceptance rate versus sequence length.">
@@ -181,25 +226,38 @@
           <img src="assets/figures/fig-013.png" alt="Qwen3-8B AIME2025 training curves.">
         </figure>
       </div>
+      <p class="full-width-text">
+        There is one main challenge to conduct systematic study of sparse dense mismatch and training stability. 
+        Under any fixed sparsity budget, the distribution mismatch always deteriorates as the generation length increases. 
+      </p>
+      <p class="full-width-text">
+        We introduce the technique of <span class="text-highlight">sparsity scheduling</span>, which uses a more lenient sparsity budget as generation length increases
+        to keep the per-token mismatch approximately constant throughout generation, more details in the paper. 
+        With sparsity scheduling and ability of hold the sparse dense Actor-Policy mismatch constant throughout the trajectory, we study the relationship between the target mismatch threshold and training stability.
+        Surprisingly, we make the following finding. 
+      </p> 
+      <p class="hypothesis-box">
+        <strong>Takeaway 1</strong>: across a range of model sizes in Qwen3 thinking family, we find that keeping
+        5-percentile mismatch threshold above 0.86 generally leads to stable RL training, supporting our hypothesis.
+      </p>
+      <p>
+        It supports that our hypothesis holds. 
+      </p>
     </section>
 
-    <section id="results" class="section visual-band">
+    <section id="control-study-2" class="section">
       <div class="section-heading">
         <span class="section-icon">4</span>
-        <h2>Results</h2>
+        <h2>Control Study 2: Finding the Lowest Cost given the Mismatch Threshold</h2>
       </div>
-      <div class="results-layout">
+      <div class="results-layout paired-figures">
         <figure class="figure-card">
-          <img src="assets/figures/fig-018.png" alt="Qwen3-14B sparse rollout and dense rollout AIME2026 results.">
+          <img src="assets/figures/figure106.png" alt="Qwen3-14B sparse rollout and dense rollout AIME2026 results.">
           <figcaption>Qwen3-14B validates stable on-par performance with sparse rollout at the tail threshold.</figcaption>
         </figure>
         <figure class="figure-card">
-          <img src="assets/figures/fig-019.png" alt="DistillSparse training improves AIME2025 accuracy.">
+          <img src="assets/figures/figure103.png" alt="DistillSparse training improves AIME2025 accuracy.">
           <figcaption>LoRA distillation can improve alignment and push beyond the plain sparse threshold.</figcaption>
-        </figure>
-        <figure class="figure-card">
-          <img src="assets/figures/fig-020.png" alt="Math threshold generalizes to coding.">
-          <figcaption>The mismatch threshold found on math generalizes to coding evaluation.</figcaption>
         </figure>
       </div>
       <div class="metric-strip">
@@ -209,48 +267,42 @@
       </div>
     </section>
 
-    <section class="section">
+    <section id="empirical-generalization" class="section visual-band">
       <div class="section-heading">
         <span class="section-icon">$</span>
-        <h2>Cost-Aware Scheduling</h2>
+        <h2>Generalization to Larger Model and Other RL domains (Coding RL)</h2>
       </div>
-      <p>
+      <div class="wide-grid single-figure">
+        <figure class="figure-card">
+          <img src="assets/figures/figure107.png" alt="Sparse rollout reward collapse under low KV budget.">
+          <figcaption>Arbitrary sparse rollout can miss the stable low-cost region.</figcaption>
+        </figure>
+      </div>
+      <p class="full-width-text">
         The rollout cost model separates dense and sparse decoding into computation and KV-cache memory traffic. Sparse
         attention replaces quadratic rollout memory growth with budgeted O(KLout) growth, so the advantage becomes
         larger in long-context reasoning regimes.
       </p>
-      <div class="two-panel">
-        <figure class="figure-card">
-          <img src="assets/figures/fig-016.png" alt="Distribution mismatch versus cost across page sizes.">
-        </figure>
-        <figure class="figure-card">
-          <img src="assets/figures/fig-017.png" alt="Sparse distillation improves distribution alignment.">
-        </figure>
-      </div>
     </section>
 
-    <section id="pdf-preview" class="section">
+    <section id="distillsparse" class="section">
       <div class="section-heading">
         <span class="section-icon">PDF</span>
-        <h2>Paper Screenshots</h2>
+        <h2>DistillSparse: A Technique Pushes for More Aggressive Sparsity and Higher Speedup</h2>
+      </div>
+      <div class="results-layout paired-figures balanced-figures">
+        <figure class="figure-card">
+          <img src="assets/figures/figure110.png" alt="Qwen3-14B sparse rollout and dense rollout AIME2026 results.">
+          <figcaption>Qwen3-14B validates stable on-par performance with sparse rollout at the tail threshold.</figcaption>
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/figures/figure109.png" alt="DistillSparse training improves AIME2025 accuracy.">
+          <figcaption>LoRA distillation can improve alignment and push beyond the plain sparse threshold.</figcaption>
+        </figure>
       </div>
       <p>
         The site uses the PDF figures above and keeps selected page screenshots below for visual reference.
-      </p>
-      <div class="page-preview">
-        <figure>
-          <img src="assets/pdf-pages/page-01.png" alt="Screenshot of paper page 1.">
-          <figcaption>Page 1</figcaption>
-        </figure>
-        <figure>
-          <img src="assets/pdf-pages/page-02.png" alt="Screenshot of paper page 2.">
-          <figcaption>Page 2</figcaption>
-        </figure>
-        <figure>
-          <img src="assets/pdf-pages/page-03.png" alt="Screenshot of paper page 3.">
-          <figcaption>Page 3</figcaption>
-        </figure>
-      </div>
+      </p> 
     </section>
 
     <section id="citation" class="section citation-section">
@@ -258,12 +310,12 @@
         <span class="section-icon">{ }</span>
         <h2>Citation</h2>
       </div>
-      <p>Placeholder citation. Replace this with the final LaTeX/BibTeX entry when the paper metadata is finalized.</p>
+      <p>If you find our study helpful to your understanding, consider citing us.</p>
       <div class="codebox">
         <button class="copy-button" type="button" data-copy-target="bibtex">Copy</button>
         <pre id="bibtex"><code>@misc{chen2026tamingsparserollout,
   title  = {Taming Sparse Rollout: Understanding Stability in RL for Large Language Models with Sparse Attention},
-  author = {Chen, Zhuoming and Liu, Hongyi and Zhou, Yang and Zheng, Haizhong and Chen, Beidi},
+  author = {Zhou, Yang and Sadhukhan, Ranajoy and Sun, Zhaofeng and Chen, Zhuoming and Kundu, Souvik and Dingliwal, Saket and Jayanthi, Sai Muralidhar and Galstyan, Aram and Zheng, Haizhong and Chen, Beidi},
   year   = {2026},
   note   = {arXiv placeholder}
 }</code></pre>
