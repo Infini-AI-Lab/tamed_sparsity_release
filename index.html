@@ -279,11 +279,19 @@
         </figure>
       </div>
       <p class="full-width-text">
-        The rollout cost model separates dense and sparse decoding into computation and KV-cache memory traffic. Sparse
-        attention replaces quadratic rollout memory growth with budgeted O(KLout) growth, so the advantage becomes
-        larger in long-context reasoning regimes.
-      </p>
-    </section>
+        We further test our hypothesis in settings where exhaustive grid search is impractical due to limited compute.
+        By holding the <span class="text-highlight">tail sparse-dense mismatch threshold</span> at 0.86, we are able to
+        stably train the <span class="text-highlight">Qwen3-14B</span> model for a full epoch on Polaris, reaching performance on par
+        with dense rollout. This setting is especially challenging because dense training would normally require roughly
+        <span class="text-highlight">8 days (190 hours)</span> on a 4-node, 32-GPU H200 cluster. 
+      </p> 
+      <p class="full-width-text">
+        Beyond math reasoning RL, we
+        also verify that the same threshold transfers to <span class="text-highlight">coding RL</span>. Specifically, we train the
+        Qwen3-1.7B thinking model for a full epoch on TACO while maintaining the 0.86 threshold, and observe that both
+        average reward and downstream performance remain on par with dense rollout. More details presented in paper. 
+      </p> 
+    </section> 
 
     <section id="distillsparse" class="section">
       <div class="section-heading">
@@ -292,16 +300,30 @@
       </div>
       <div class="results-layout paired-figures balanced-figures">
         <figure class="figure-card">
-          <img src="assets/figures/figure110.png" alt="Qwen3-14B sparse rollout and dense rollout AIME2026 results.">
-          <figcaption>Qwen3-14B validates stable on-par performance with sparse rollout at the tail threshold.</figcaption>
+          <img src="assets/figures/figure110.png" alt="DistillSparse brings us higher speedup while reaching the same sparse-dense mismatch threshold.">
+          <figcaption>DistillSparse brings us higher speedup while reaching the same sparse-dense mismatch threshold.</figcaption>
         </figure>
         <figure class="figure-card">
           <img src="assets/figures/figure109.png" alt="DistillSparse training improves AIME2025 accuracy.">
-          <figcaption>LoRA distillation can improve alignment and push beyond the plain sparse threshold.</figcaption>
+          <figcaption>LoRA generally improves the sparse attention to better aligned with the dense bringing original 0.80 sparsity setting to get mismatch level near 0.86, improving speedup from 2.2x to 2.5x.</figcaption>
         </figure>
       </div>
-      <p>
-        The site uses the PDF figures above and keeps selected page screenshots below for visual reference.
+      <p class="full-width-text">
+        After identifying a stable sparse-dense mismatch threshold, we ask whether sparse attention can be pushed to
+        deliver even higher rollout speedup. A useful observation is that sparse-rollout dense-policy training already
+        contains the ingredients needed for <span class="text-highlight">on-policy distillation</span>: trajectories are generated with
+        sparse attention, while dense log probabilities are computed by the dense policy for training. This naturally
+        provides supervision for making the sparse actor closer to the dense policy. 
+        However, main challenge is to perform this alignment without contaminating the dense policy and without adding substantial training overhead. 
+      </p> 
+      <p class="full-width-text"> 
+        We propose a <span class="text-highlight">LoRA-based sparse distillation</span> design. DistillSparse adds an auxiliary sparse
+        distillation objective that actively aligns sparse rollouts with the dense policy while updating only the LoRA
+        parameters. Starting from the original <span class="text-highlight">0.86 mismatch-threshold</span> setting, we find that after
+        training on 20K examples, the learned LoRA generally improves sparse attention enough to make a more aggressive
+        <span class="text-highlight">0.80 sparsity setting</span> approach the original 0.86 mismatch level, enabling higher speedup.
+        Empirically, this LoRA-only procedure introduces minimal overhead while improving rollout efficiency; full
+        details are provided in the paper.
       </p> 
     </section>
 
