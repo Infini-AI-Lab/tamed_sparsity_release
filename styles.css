@@ -195,19 +195,24 @@ h1 {
 }
 
 .hero-title {
-  max-width: 940px;
+  max-width: 1000px;
   margin: 0 auto 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  text-align: center;
+  gap: 22px;
+  text-align: left;
   font-family: var(--serif);
   font-weight: 500;
-  font-size: clamp(30px, 4.4vw, 52px);
-  line-height: 1.08;
+  font-size: clamp(26px, 3.3vw, 39px);
+  line-height: 1.12;
   letter-spacing: -0.012em;
   color: var(--ink);
+}
+
+.hero-title span {
+  flex: 0 1 auto;
+  max-width: 22em;
 }
 
 .hero-title u {
@@ -221,10 +226,9 @@ h1 {
 
 .hero-title img {
   flex: 0 0 auto;
-  width: clamp(54px, 7vw, 86px);
-  height: clamp(54px, 7vw, 86px);
+  height: 2.24em; /* exactly the two-line title height (2 × line-height) */
+  width: auto;
   object-fit: contain;
-  border-radius: 8px;
 }
 
 .authors {
